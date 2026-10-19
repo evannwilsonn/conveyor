@@ -4,9 +4,9 @@
 [![footnote](https://github.com/evannwilsonn/footnote/actions/workflows/pipeline.yml/badge.svg)](https://github.com/evannwilsonn/footnote/actions/workflows/pipeline.yml)
 [![barometer](https://github.com/evannwilsonn/barometer/actions/workflows/pipeline.yml/badge.svg)](https://github.com/evannwilsonn/barometer/actions/workflows/pipeline.yml)
 
-The production pipeline, project 12 of my AI project roadmap: Docker and GitHub Actions around three apps, so every push is tested, packed into a container and shipped.
+The production pipeline, project 12 of my AI project roadmap: Docker and GitHub Actions around three apps (six since project 13), so every push is tested, packed into a container and shipped.
 
-**Live board:** [evannwilsonn.github.io/conveyor](https://evannwilsonn.github.io/conveyor/) reads the three pipelines' runs from GitHub when it opens and draws each latest run as a pictogram chart, one square per five seconds of work, coloured by stage (getting ready, checking, packing, shipping), with every step listed and the last 20 runs marked pass or fail.
+**Live board:** [evannwilsonn.github.io/conveyor](https://evannwilsonn.github.io/conveyor/) reads the pipelines' runs from GitHub when it opens and draws each latest run as a pictogram chart, one square per five seconds of work, coloured by stage (getting ready, checking, packing, shipping), with every step listed and the last 20 runs marked pass or fail.
 
 | App | Pipeline | Tests | Ships to |
 |---|---|---|---|
@@ -54,3 +54,7 @@ docs/index.html         the live board (GitHub Pages)
 ## Design
 
 The board is an Isotype chart, after Otto and Marie Neurath's pictogram statistics: counts are drawn as repeated squares rather than bars, so a reader can count them. One square is five seconds of work. Four stage colours on warm chart paper (`#f1ede2`): grey for getting ready, blue (`#2a5591`) for checking, ochre (`#d39a17`) for packing images, red (`#c13a2c`) for shipping, each with its own pictogram. Jost (a Futura revival, the face Isotype was set in) for headings and text, Courier Prime for figures. Dark mode is its own palette, not an inversion. The board makes six API calls per visit and keeps answers for five minutes, inside GitHub's 60-an-hour limit for visitors who aren't signed in.
+
+## Project 13
+
+The capstone's three Elixir apps (Lure, Recall and Squiggle) run the same line. Each one is formatted, compiled with warnings as errors and tested, built into an image that has to start and serve on port 7860, published to GHCR, and handed to its Hugging Face Space.
