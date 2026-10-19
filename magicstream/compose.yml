@@ -1,0 +1,68 @@
+# MagicStream in four containers: nginx serving the React app and proxying /api, the Go API,
+# MongoDB, and a one-shot seed job that loads the course's sample movies.
+#
+#   ./fetch.sh                      # the app's source, at the pinned commit
+#   docker compose up -d --build    # http://localhost:8081
+#   ./smoke.sh                      # the same checks CI runs
+#
+# Sign in with a seeded account or register a new one. The admin review feature calls OpenAI and
+# needs OPENAI_API_KEY in your shell or a .env file here; everything else works without it.
+services:
+  web:
+    build:
+      context: ./src
+      dockerfile: ../web.Dockerfile
+      target: run
+      additional_contexts: { conf: . }
+    image: magicstream-web:local
+    ports: ["8081:80"]
+    depends_on:
+      api: { condition: service_healthy }
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./src
+      dockerfile: ../api.Dockerfile
+      target: run
+    image: magicstream-api:local
+    environment:
+      MONGODB_URI: mongodb://db:27017
+      DATABASE_NAME: magicstream
+      # Local-only defaults; set real ones in .env for anything public.
+      SECRET_KEY: ${SECRET_KEY:-local-only-access-secret-change-me}
+      SECRET_REFRESH_KEY: ${SECRET_REFRESH_KEY:-local-only-refresh-secret-change-me}
+      ALLOWED_ORIGINS: http://localhost:8081,http://localhost:5173
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      BASE_PROMPT_TEMPLATE: >-
+        ${BASE_PROMPT_TEMPLATE:-Classify the sentiment of this movie review with exactly one of these
+        words and nothing else: {rankings}. Review: }
+      RECOMMENDED_MOVIE_LIMIT: "5"
+    depends_on:
+      db: { condition: service_healthy }
+      seed: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+  db:
+    image: mongo:8
+    volumes: [movies:/data/db]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1})"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  # Fills empty collections from the course's JSON files, then exits. Safe to rerun.
+  seed:
+    image: mongo:8
+    command: ["mongosh", "--quiet", "mongodb://db:27017", "/seed.js"]
+    environment: { DATABASE_NAME: magicstream }
+    volumes:
+      - ./seed.js:/seed.js:ro
+      - ./src/magic-stream-seed-data:/seed-data:ro
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
+volumes:
+  movies:

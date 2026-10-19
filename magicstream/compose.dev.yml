@@ -1,0 +1,23 @@
+# Development: Vite on :5173 and `go run` on :8080, with your edits in src/ synced in as you save.
+#
+#   docker compose -f compose.yml -f compose.dev.yml watch
+services:
+  web:
+    build: { target: dev }
+    image: magicstream-web:dev
+    ports: !override ["5173:5173"]
+    depends_on: !override [api]
+    develop:
+      watch:
+        - { action: sync, path: ./src/Client/magic-stream-client/src, target: /app/src }
+        - { action: rebuild, path: ./src/Client/magic-stream-client/package.json }
+
+  api:
+    build: { target: dev }
+    image: magicstream-api:dev
+    ports: ["8080:8080"]
+    healthcheck: { disable: true }
+    develop:
+      watch:
+        - { action: sync+restart, path: ./src/Server/MagicStreamServer, target: /src }
+        - { action: rebuild, path: ./src/Server/MagicStreamServer/go.mod }

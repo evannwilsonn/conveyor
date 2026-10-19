@@ -1,0 +1,86 @@
+# MagicStream's pipeline: fetch the app at its pinned commit, build the API and web images, run the
+# whole stack (nginx, Go API, MongoDB, seed job) and check it end to end through the front door.
+# Runs on every push and pull request, and weekly so a broken base image shows up even when
+# nothing here changes. The images aren't published: the app's source has no license.
+name: magicstream
+
+on:
+  push:
+    branches: [main]
+    paths: ["magicstream/**", ".github/workflows/magicstream.yml"]
+  pull_request:
+    paths: ["magicstream/**", ".github/workflows/magicstream.yml"]
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magicstream-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: magicstream
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch MagicStream at the pinned commit
+        run: ./fetch.sh
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the API image
+        uses: docker/build-push-action@v6
+        with:
+          context: magicstream/src
+          file: magicstream/api.Dockerfile
+          target: run
+          load: true
+          tags: magicstream-api:local
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+
+      - name: Build the web image
+        uses: docker/build-push-action@v6
+        with:
+          context: magicstream/src
+          file: magicstream/web.Dockerfile
+          build-contexts: conf=magicstream
+          target: run
+          load: true
+          tags: magicstream-web:local
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+
+      - name: Start the stack
+        run: |
+          export SECRET_KEY=$(openssl rand -hex 32) SECRET_REFRESH_KEY=$(openssl rand -hex 32)
+          docker compose up -d --no-build
+
+      - name: Smoke test through nginx
+        run: ./smoke.sh
+
+      - name: Dev targets still build
+        # Vite and `go run` images, so compose.dev.yml keeps working.
+        run: |
+          docker build -f api.Dockerfile --target dev -t magicstream-api:dev src
+          docker build -f web.Dockerfile --target dev -t magicstream-web:dev src
+
+      - name: Image sizes
+        run: |
+          {
+            echo "| image | size |"
+            echo "|---|---|"
+            docker images --format '| {{.Repository}}:{{.Tag}} | {{.Size}} |' | grep magicstream
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --no-color
