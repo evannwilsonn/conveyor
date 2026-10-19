@@ -118,6 +118,8 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--rule);
 .mark.cancelled, .mark.skipped, .mark.stopped { background: var(--setup); height: 6px; }
 .empty-note { font: 400 14px var(--data); color: var(--soft); }
 @media (max-width: 820px) {
+  .masthead { grid-template-columns: minmax(0, 1fr); }
+  .masthead .plate { text-align: left; }
   .lede, .how { grid-template-columns: minmax(0, 1fr); }
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .facts div:nth-child(3) { border-left: 0; padding-left: 0; }
@@ -127,8 +129,6 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--rule);
   .step .units { grid-column: 2 / -1; grid-row: 2; }
 }
 @media (max-width: 480px) {
-  .masthead { grid-template-columns: minmax(0, 1fr); }
-  .masthead .plate { text-align: left; }
   .app-head { grid-template-columns: minmax(0, 1fr); }
   .app-head .verdict { justify-self: start; }
   .facts { grid-template-columns: minmax(0, 1fr); }
