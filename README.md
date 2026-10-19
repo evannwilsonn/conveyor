@@ -6,7 +6,7 @@
 
 The production pipeline, project 12 of my AI project roadmap: Docker and GitHub Actions around three apps, so every push is tested, packed into a container and shipped.
 
-**Live board:** [evannwilsonn.github.io/conveyor](https://evannwilsonn.github.io/conveyor/) reads the three pipelines' runs from GitHub when it opens. It lays each run's jobs on one clock, split into their steps, and shows the last 20 runs by duration.
+**Live board:** [evannwilsonn.github.io/conveyor](https://evannwilsonn.github.io/conveyor/) reads the three pipelines' runs from GitHub when it opens and draws each latest run as a pictogram chart, one square per five seconds of work, coloured by stage (getting ready, checking, packing, shipping), with every step listed and the last 20 runs marked pass or fail.
 
 | App | Pipeline | Tests | Ships to |
 |---|---|---|---|
@@ -53,4 +53,4 @@ docs/index.html         the live board (GitHub Pages)
 
 ## Design
 
-The board is a freight manifest: kraft-paper yard (`#e4d8bf`), manifest-paper panels (`#f7f1e3`) and teal stamp ink (`#0e5966`) for headings and links. Barlow Condensed is for stencilled headings and IBM Plex Mono for data. Run status uses green, red and amber, each with an icon and a word, never colour alone. The status stamps are rotated a few degrees, like rubber stamps. Dark mode is its own palette (`#12181a` yard, `#6cc2c9` stamp), not an inversion. The board makes six API calls per visit and keeps answers for five minutes, inside GitHub's 60-an-hour limit for visitors who aren't signed in.
+The board is an Isotype chart, after Otto and Marie Neurath's pictogram statistics: counts are drawn as repeated squares rather than bars, so a reader can count them. One square is five seconds of work. Four stage colours on warm chart paper (`#f1ede2`): grey for getting ready, blue (`#2a5591`) for checking, ochre (`#d39a17`) for packing images, red (`#c13a2c`) for shipping, each with its own pictogram. Jost (a Futura revival, the face Isotype was set in) for headings and text, Courier Prime for figures. Dark mode is its own palette, not an inversion. The board makes six API calls per visit and keeps answers for five minutes, inside GitHub's 60-an-hour limit for visitors who aren't signed in.

@@ -2,259 +2,245 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Conveyor</title>
-<meta name="description" content="Live CI/CD board for Footnote, Barometer and MagicStream: every push tested, packed into containers and shipped.">
+<meta name="description" content="Live pictogram chart of the Footnote, Barometer and MagicStream CI/CD pipelines: where each run spends its time.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* Layout: an Isotype chart sheet. Pictogram rows read left to right; one square = 5 seconds. */
 :root {
-  --yard: #e4d8bf;        /* kraft board, the page */
-  --sheet: #f7f1e3;       /* manifest paper, panels */
-  --ink: #1a2529;
-  --soft: #4b5558;
-  --faint: #6f777a;
-  --rule: #cbbd9f;
-  --stamp: #0e5966;       /* teal stamp ink: headings, links, the belt */
-  --stamp-soft: #d3e4e3;
-  --belt: #2b3538;
-  --pass: #1f7a3d;  --pass-bg: #dcefe0;
-  --fail: #b3261e;  --fail-bg: #f8dedb;
-  --run: #a35f00;   --run-bg: #f8ead0;
-  --skip: #6f777a;  --skip-bg: #e9e3d6;
-  --shadow: 0 1px 0 rgb(0 0 0 / .04), 0 18px 40px -28px rgb(40 30 10 / .45);
+  --paper: #f1ede2;
+  --ink: #1d1c1a;
+  --soft: #55524b;
+  --rule: #cfc8b6;
+  --setup: #a29d90;    /* getting ready: runners, checkouts, installs */
+  --test: #2a5591;     /* checking: tests, builds that must compile, browser runs */
+  --pack: #d39a17;     /* packing: Docker image builds */
+  --ship: #c13a2c;     /* shipping: registry login and publish */
+  --card: #f8f5ec;
+  --display: "Jost", "Futura", "Century Gothic", system-ui, sans-serif;
+  --body: "Jost", "Futura", "Century Gothic", system-ui, sans-serif;
+  --data: "Courier Prime", "Courier New", ui-monospace, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --yard: #12181a; --sheet: #1b2326; --ink: #eef0ea; --soft: #bfc6c4; --faint: #8f9896;
-    --rule: #33403f; --stamp: #6cc2c9; --stamp-soft: #1e3a3d; --belt: #0b0f10;
-    --pass: #5fcf83; --pass-bg: #173322; --fail: #ff8a80; --fail-bg: #3d1a18;
-    --run: #f0b14d; --run-bg: #3a2c12; --skip: #9aa3a1; --skip-bg: #262e30;
-    --shadow: 0 18px 40px -28px rgb(0 0 0 / .8);
+    --paper: #1a1a18; --ink: #f0ebdd; --soft: #b9b3a4; --rule: #3b3934;
+    --setup: #7f7a6e; --test: #6f9be0; --pack: #e8b23a; --ship: #ec6b5c; --card: #22221f;
+    color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --yard: #12181a; --sheet: #1b2326; --ink: #eef0ea; --soft: #bfc6c4; --faint: #8f9896;
-  --rule: #33403f; --stamp: #6cc2c9; --stamp-soft: #1e3a3d; --belt: #0b0f10;
-  --pass: #5fcf83; --pass-bg: #173322; --fail: #ff8a80; --fail-bg: #3d1a18;
-  --run: #f0b14d; --run-bg: #3a2c12; --skip: #9aa3a1; --skip-bg: #262e30;
-  --shadow: 0 18px 40px -28px rgb(0 0 0 / .8);
+  --paper: #1a1a18; --ink: #f0ebdd; --soft: #b9b3a4; --rule: #3b3934;
+  --setup: #7f7a6e; --test: #6f9be0; --pack: #e8b23a; --ship: #ec6b5c; --card: #22221f;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0; background: var(--yard); color: var(--ink);
-  font: 16px/1.55 "IBM Plex Sans", system-ui, sans-serif;
-  background-image: repeating-linear-gradient(90deg, transparent 0 46px, rgb(120 90 40 / .035) 46px 47px);
-}
-a { color: var(--stamp); text-underline-offset: 3px; }
-.wrap { max-width: 1140px; margin: 0 auto; padding: 0 16px 64px; }
-.mono, code, .num { font-family: "IBM Plex Mono", ui-monospace, monospace; }
-.num { font-variant-numeric: tabular-nums; }
-.label { font: 500 12px/1.3 "IBM Plex Mono", monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
-h1, h2, h3 { font-family: "Barlow Condensed", sans-serif; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; margin: 0; line-height: 1; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.55 var(--body); }
+a { color: inherit; text-decoration-color: var(--ship); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a:hover { color: var(--ship); }
+:focus-visible { outline: 3px solid var(--test); outline-offset: 2px; }
+.sheet { max-width: 1080px; margin: 0 auto; padding-block: 28px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.num { font-family: var(--data); font-variant-numeric: tabular-nums; }
 
-/* masthead: a shipping label */
-header.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 0 18px; }
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand-mark { width: 38px; height: 38px; border: 2.5px solid var(--stamp); border-radius: 4px; display: grid; place-items: center; transform: rotate(-4deg); }
-.brand-mark svg { width: 24px; height: 24px; }
-.brand h1 { font-size: 30px; color: var(--stamp); }
-.top nav { display: flex; gap: 16px; align-items: center; font-size: 15px; }
-.theme { font: 500 12px "IBM Plex Mono", monospace; letter-spacing: .06em; text-transform: uppercase; background: none; border: 1.5px solid var(--rule); color: var(--soft); border-radius: 3px; padding: 5px 9px; cursor: pointer; }
+/* title block */
+.masthead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: end; border-bottom: 6px solid var(--ink); padding-bottom: 14px; }
+.masthead h1 { margin: 0; font: 800 clamp(48px, 10vw, 112px)/.86 var(--display); letter-spacing: -.02em; text-transform: uppercase; }
+.masthead .plate { font: 500 13px/1.6 var(--data); text-align: right; color: var(--soft); }
+.masthead .plate b { color: var(--ink); font-weight: 700; }
+.lede { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; margin-top: 22px; }
+.lede p { margin: 0; font-size: 20px; line-height: 1.45; max-width: 46ch; text-wrap: pretty; }
+.lede p.small { font-size: 15px; color: var(--soft); }
+.links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-weight: 500; }
 
-.hero { border-top: 3px double var(--rule); border-bottom: 3px double var(--rule); padding: 34px 0 30px; display: grid; gap: 28px; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: end; }
-.hero h2 { font-size: clamp(40px, 7vw, 76px); }
-.hero h2 span { color: var(--stamp); }
-.hero p { margin: 14px 0 0; font-size: 18px; color: var(--soft); max-width: 56ch; }
-.tally { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; background: var(--sheet); border: 1.5px solid var(--ink); box-shadow: var(--shadow); }
-.tally div { padding: 14px 14px 12px; border-left: 1px dashed var(--rule); }
-.tally div:first-child { border-left: 0; }
-.tally b { display: block; font: 600 30px/1 "IBM Plex Mono", monospace; margin-top: 6px; }
-.tally small { display: block; color: var(--faint); font-size: 12.5px; margin-top: 4px; }
+/* key */
+.key { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: center; font-size: 15px; }
+.key .unit-note { font: 700 13px var(--data); letter-spacing: .04em; text-transform: uppercase; padding: 6px 10px; border: 2px solid var(--ink); }
+.k { display: inline-flex; align-items: center; gap: 8px; }
+.k svg { width: 26px; height: 26px; flex: none; }
 
-.status-line { margin: 18px 0 0; font-size: 14px; color: var(--faint); min-height: 1.5em; }
+/* the overview: one pictogram row per app */
+.chart { margin-top: 24px; border-top: 2px solid var(--ink); }
+.crow { display: grid; grid-template-columns: 160px minmax(0, 1fr) 84px; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.crow .who { font: 700 22px/1.1 var(--display); text-transform: uppercase; letter-spacing: .01em; }
+.crow .who small { display: block; font: 400 13px var(--data); text-transform: none; color: var(--soft); margin-top: 4px; letter-spacing: 0; }
+.crow .t { font: 700 20px var(--data); text-align: right; }
+.units { display: flex; flex-wrap: wrap; gap: 3px; }
+.u { width: 13px; height: 13px; border-radius: 1px; background: var(--setup); }
+.u.test { background: var(--test); } .u.pack { background: var(--pack); } .u.ship { background: var(--ship); }
+.u.half { width: 6px; }
+.axis-note { font: 400 13px var(--data); color: var(--soft); margin-top: 10px; }
 
-/* one manifest per app */
-.line { margin-top: 40px; background: var(--sheet); border: 1.5px solid var(--ink); box-shadow: var(--shadow); position: relative; }
-.line-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 20px 22px 16px; border-bottom: 1.5px solid var(--ink); }
-.line-head h3 { font-size: 34px; }
-.line-head .what { color: var(--soft); margin: 6px 0 0; max-width: 64ch; }
-.line-head .links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 14.5px; }
-.stamp { align-self: start; justify-self: end; font: 700 15px/1 "Barlow Condensed", sans-serif; letter-spacing: .12em; text-transform: uppercase; padding: 8px 12px 7px; border: 2.5px solid currentColor; border-radius: 3px; transform: rotate(3deg); display: inline-flex; gap: 7px; align-items: center; white-space: nowrap; }
-.stamp svg { width: 15px; height: 15px; }
-.s-success { color: var(--pass); } .s-failure, .s-cancelled, .s-timed_out { color: var(--fail); } .s-in_progress, .s-queued, .s-waiting, .s-pending { color: var(--run); } .s-skipped, .s-unknown { color: var(--skip); }
-
-.line-body { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); }
-.panel { padding: 18px 22px 22px; min-width: 0; }
-.panel + .panel { border-left: 1px dashed var(--rule); }
-.panel h4 { margin: 0 0 4px; font: 600 13px/1.3 "IBM Plex Mono", monospace; letter-spacing: .07em; text-transform: uppercase; }
-.panel .sub { color: var(--faint); font-size: 13.5px; margin: 0 0 14px; }
-.commit { font-size: 14.5px; margin: 0 0 14px; display: flex; gap: 8px; align-items: baseline; min-width: 0; }
-.commit code { font-size: 13px; background: var(--stamp-soft); color: var(--stamp); padding: 1px 6px; border-radius: 2px; flex: none; }
-.commit span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* the belt: jobs on a shared clock, each split into its steps */
-.lane { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: center; margin-bottom: 10px; }
-.lane-name { font: 500 13px "IBM Plex Mono", monospace; text-align: right; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.track { position: relative; height: 34px; background: repeating-linear-gradient(90deg, var(--belt) 0 6px, color-mix(in srgb, var(--belt) 82%, var(--yard)) 6px 12px); border-radius: 3px; }
-.job { position: absolute; top: 4px; bottom: 4px; display: flex; gap: 2px; }
-.seg { height: 100%; min-width: 3px; border-radius: 2px; background: var(--pass-bg); border: 1.5px solid var(--pass); position: relative; cursor: default; }
-.seg.failure { background: var(--fail-bg); border-color: var(--fail); }
-.seg.skipped { background: var(--skip-bg); border-color: var(--skip); }
-.seg.running { background: var(--run-bg); border-color: var(--run); }
-.seg:hover, .seg:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; z-index: 2; }
-.axis { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; font: 12px "IBM Plex Mono", monospace; color: var(--faint); }
-.axis div { display: flex; justify-content: space-between; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; font-size: 13px; color: var(--soft); }
-.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; border: 1.5px solid; }
-.longest { margin-top: 12px; font-size: 14px; color: var(--soft); }
-
-/* recent runs: crates, height = duration */
-.crates { display: flex; align-items: flex-end; gap: 3px; height: 110px; border-bottom: 2px solid var(--ink); padding: 0 2px; }
-.crate { flex: 1 1 0; min-width: 4px; max-width: 28px; border-radius: 2px 2px 0 0; background: var(--pass); position: relative; display: block; }
-.crate.failure { background: var(--fail); }
-.crate.running { background: var(--run); }
-.crate.other { background: var(--skip); }
-.crate:hover, .crate:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
-.crates-axis { display: flex; justify-content: space-between; font: 12px "IBM Plex Mono", monospace; color: var(--faint); margin-top: 5px; }
-.figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
-.figures div { border-top: 1.5px solid var(--ink); padding-top: 6px; }
-.figures b { display: block; font: 600 21px/1.2 "IBM Plex Mono", monospace; }
-.figures small { color: var(--faint); font-size: 12.5px; }
-
-.ships { margin: 0; padding: 14px 22px 18px; border-top: 1.5px solid var(--ink); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.ships div { min-width: 0; }
-.ships dt { margin-bottom: 3px; }
-.ships dd { margin: 0; font-size: 14.5px; overflow-wrap: anywhere; }
-
-.empty { padding: 26px 22px; color: var(--soft); margin: 0; }
-
-#tip { position: fixed; pointer-events: none; z-index: 10; background: var(--ink); color: var(--sheet); font: 13px/1.45 "IBM Plex Mono", monospace; padding: 7px 10px; border-radius: 3px; max-width: 300px; opacity: 0; transition: opacity .12s; }
-#tip b { font-weight: 600; }
+/* per app */
+.app { margin-top: 56px; }
+.app-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 24px; align-items: end; border-bottom: 3px solid var(--ink); padding-bottom: 10px; }
+.app-head h2 { margin: 0; font: 800 44px/.95 var(--display); text-transform: uppercase; letter-spacing: -.01em; }
+.app-head p { margin: 6px 0 0; color: var(--soft); max-width: 60ch; }
+.verdict { display: inline-flex; align-items: center; gap: 8px; font: 700 14px var(--data); text-transform: uppercase; letter-spacing: .06em; padding: 7px 12px; background: var(--test); color: var(--paper); text-decoration: none; }
+.verdict:hover { color: var(--paper); background: var(--ink); }
+.verdict svg { width: 16px; height: 16px; }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-bottom: 1px solid var(--rule); margin: 0; }
+.facts div { padding: 12px 14px 12px 0; min-width: 0; }
+.facts div + div { padding-left: 14px; border-left: 1px solid var(--rule); }
+.facts dt { font: 700 12px var(--data); text-transform: uppercase; letter-spacing: .06em; color: var(--soft); }
+.facts dd { margin: 4px 0 0; font-size: 15.5px; overflow-wrap: anywhere; }
+.jobs { display: grid; gap: 22px; margin-top: 20px; }
+.job h3 { margin: 0 0 8px; font: 700 14px var(--data); text-transform: uppercase; letter-spacing: .07em; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.job h3 span { font-weight: 400; color: var(--soft); text-transform: none; letter-spacing: 0; }
+.step { display: grid; grid-template-columns: 30px minmax(0, 250px) minmax(0, 1fr) 56px; gap: 12px; align-items: center; padding: 5px 0; border-top: 1px dotted var(--rule); }
+.step svg { width: 22px; height: 22px; }
+.step .name { font-size: 15.5px; line-height: 1.3; }
+.step .d { font: 400 14px var(--data); text-align: right; color: var(--soft); }
+.parallel { font-size: 14.5px; color: var(--soft); margin: 14px 0 0; }
 
 /* how it works */
-.how { margin-top: 48px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1.5px solid var(--ink); background: var(--sheet); }
-.how > div { padding: 20px 22px; border-left: 1px dashed var(--rule); min-width: 0; }
-.how > div:first-child { border-left: 0; }
-.how h3 { font-size: 24px; color: var(--stamp); margin-bottom: 8px; }
-.how p { margin: 0 0 10px; color: var(--soft); font-size: 15.5px; }
-pre { margin: 6px 0 0; background: var(--belt); color: #e8efe9; font: 13px/1.6 "IBM Plex Mono", monospace; padding: 12px 14px; border-radius: 3px; overflow-x: auto; }
-footer { margin-top: 40px; padding-top: 16px; border-top: 3px double var(--rule); color: var(--faint); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; }
+.how { margin-top: 64px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; border-top: 6px solid var(--ink); padding-top: 22px; }
+.how div { min-width: 0; }
+.how svg { width: 44px; height: 44px; }
+.how h3 { margin: 10px 0 6px; font: 800 26px/1 var(--display); text-transform: uppercase; }
+.how p { margin: 0; color: var(--soft); font-size: 16px; }
+pre { margin: 12px 0 0; padding: 10px 12px; background: var(--card); border: 1px solid var(--rule); font: 13px/1.6 var(--data); overflow-x: auto; }
+footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; font-size: 14px; color: var(--soft); }
+.theme { font: 700 12px var(--data); text-transform: uppercase; letter-spacing: .06em; background: none; color: var(--ink); border: 2px solid var(--ink); padding: 5px 9px; cursor: pointer; margin-top: 6px; }
 
-@media (max-width: 860px) {
-  .hero, .line-body { grid-template-columns: minmax(0, 1fr); }
-  .panel + .panel { border-left: 0; border-top: 1px dashed var(--rule); }
-  .how { grid-template-columns: minmax(0, 1fr); }
-  .how > div { border-left: 0; border-top: 1px dashed var(--rule); }
-  .how > div:first-child { border-top: 0; }
-  .ships { grid-template-columns: minmax(0, 1fr); }
+.verdict.v-failed { background: var(--ship); }
+.verdict.v-running { background: var(--pack); color: var(--ink); }
+.runline { margin: 14px 0 0; font-size: 15.5px; }
+.runline .num { font-size: 14px; padding: 1px 6px; border: 1px solid var(--rule); }
+.step.failed .name b { color: var(--ship); font-family: var(--data); text-transform: uppercase; font-size: 12px; letter-spacing: .06em; }
+.history { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.history .hl { font: 400 13px var(--data); color: var(--soft); }
+.marks { display: flex; flex-wrap: wrap; gap: 4px; }
+.mark { width: 16px; height: 16px; display: block; background: var(--ink); }
+.mark.failed { background: var(--ship); clip-path: polygon(20% 0, 50% 30%, 80% 0, 100% 20%, 70% 50%, 100% 80%, 80% 100%, 50% 70%, 20% 100%, 0 80%, 30% 50%, 0 20%); }
+.mark.running { background: var(--pack); border-radius: 50%; }
+.mark.cancelled, .mark.skipped, .mark.stopped { background: var(--setup); height: 6px; }
+.empty-note { font: 400 14px var(--data); color: var(--soft); }
+@media (max-width: 820px) {
+  .lede, .how { grid-template-columns: minmax(0, 1fr); }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .facts div:nth-child(3) { border-left: 0; padding-left: 0; }
+  .crow { grid-template-columns: minmax(0, 1fr) auto; }
+  .crow .units { grid-column: 1 / -1; grid-row: 2; }
+  .step { grid-template-columns: 26px minmax(0, 1fr) 50px; }
+  .step .units { grid-column: 2 / -1; grid-row: 2; }
 }
-@media (max-width: 520px) {
-  .line-head { grid-template-columns: minmax(0, 1fr); }
-  .stamp { justify-self: start; }
-  .lane, .axis { grid-template-columns: 64px minmax(0, 1fr); }
-  .tally b { font-size: 24px; }
-  .panel, .line-head, .ships { padding-left: 16px; padding-right: 16px; }
+@media (max-width: 480px) {
+  .masthead { grid-template-columns: minmax(0, 1fr); }
+  .masthead .plate { text-align: left; }
+  .app-head { grid-template-columns: minmax(0, 1fr); }
+  .app-head .verdict { justify-self: start; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .facts div + div { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); }
+  .u { width: 11px; height: 11px; } .u.half { width: 5px; }
 }
 </style>
+
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--stamp)"><rect x="3" y="7" width="8" height="7" rx="1"/><rect x="13" y="4" width="8" height="10" rx="1"/><path d="M2 18h20"/><circle cx="6" cy="20" r="1.3"/><circle cx="12" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/></svg>
-      </div>
-      <h1>Conveyor</h1>
-    </div>
-    <nav>
-      <a href="https://github.com/evannwilsonn/conveyor">Source</a>
-      <button class="theme" id="theme" type="button" aria-label="Switch colour theme">Theme</button>
-    </nav>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-setup" viewBox="0 0 24 24"><path fill="var(--setup)" d="M12 2l2 3 3.5-.8.8 3.5 3 2-2 3 2 3-3 2-.8 3.5L14 19l-2 3-2-3-3.5.8L5.7 17 2.7 15l2-3-2-3 3-2 .8-3.5L10 5z"/><circle cx="12" cy="12" r="3.6" fill="var(--paper)"/></symbol>
+    <symbol id="i-test" viewBox="0 0 24 24"><path fill="var(--test)" d="M9 2h6v2h-1v5.2l5.6 9.4A2.2 2.2 0 0 1 17.7 22H6.3a2.2 2.2 0 0 1-1.9-3.4L10 9.2V4H9z"/><path fill="var(--paper)" d="M8.2 15h7.6l1.5 2.6H6.7z" opacity=".55"/></symbol>
+    <symbol id="i-pack" viewBox="0 0 24 24"><path fill="var(--pack)" d="M2 7l10-5 10 5v10l-10 5-10-5z"/><path fill="none" stroke="var(--paper)" stroke-width="1.6" d="M2 7l10 5 10-5M12 12v10"/></symbol>
+    <symbol id="i-ship" viewBox="0 0 24 24"><path fill="var(--ship)" d="M1 6h13v10H1zM14 9h5l4 4v3h-9z"/><circle cx="5.5" cy="18" r="2.4" fill="var(--ship)"/><circle cx="18" cy="18" r="2.4" fill="var(--ship)"/><circle cx="5.5" cy="18" r="1" fill="var(--paper)"/><circle cx="18" cy="18" r="1" fill="var(--paper)"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2.4" d="M2.5 8.5l3.5 3.5 7.5-8"/></symbol>
+    <symbol id="i-cross" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2.4" d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></symbol>
+  </defs>
+</svg>
+
+<div class="sheet">
+  <header class="masthead">
+    <h1>Conveyor</h1>
+    <div class="plate">Project 12 · production pipeline<br><b id="stamp">Reading from GitHub…</b><br><button class="theme" id="theme" type="button">Light / dark</button></div>
   </header>
 
-  <section class="hero" aria-labelledby="h-hero">
+  <section class="lede">
     <div>
-      <p class="label">Project 12 · production pipeline</p>
-      <h2 id="h-hero">Every push, <span>tested, packed and shipped</span></h2>
-      <p>Three apps run through GitHub Actions on every push: tests against real databases, a browser driving the sign-up flow, Docker images built and started before anything is published. This board reads their latest runs live from GitHub.</p>
+      <p>Three apps go through the same line on every push: checked, packed into a container, shipped. Here is where each one's latest run spent its time, read live from GitHub.</p>
+      <div class="links"><a href="https://github.com/evannwilsonn/conveyor">Conveyor on GitHub</a><a href="https://www.youtube.com/watch?v=lEcULR30-GM">The course it follows</a></div>
     </div>
-    <div>
-      <div class="tally" aria-live="polite">
-        <div><span class="label">Runs shown</span><b class="num" id="t-runs">–</b><small>last 20 per app</small></div>
-        <div><span class="label">Passed</span><b class="num" id="t-pass">–</b><small>of finished runs</small></div>
-        <div><span class="label">Median run</span><b class="num" id="t-med">–</b><small>green runs, start to end</small></div>
-      </div>
-      <p class="status-line" id="status">Reading the yard…</p>
-    </div>
+    <p class="small">Counted from each pipeline's latest finished run on GitHub Actions. Every square is five seconds of work. The steps GitHub runs around each job (starting it, tidying up) are left out.</p>
   </section>
 
-  <main id="lines"></main>
+  <div class="key" aria-label="Key">
+    <span class="unit-note">■ = 5 seconds</span>
+    <span class="k"><svg aria-hidden="true"><use href="#i-setup"/></svg>Getting ready</span>
+    <span class="k"><svg aria-hidden="true"><use href="#i-test"/></svg>Checking</span>
+    <span class="k"><svg aria-hidden="true"><use href="#i-pack"/></svg>Packing the image</span>
+    <span class="k"><svg aria-hidden="true"><use href="#i-ship"/></svg>Shipping</span>
+  </div>
 
-  <section class="how" aria-label="How the pipelines work">
+  <section class="chart" id="chart" aria-label="Work per run, by app"></section>
+  <p class="axis-note" id="chart-note"></p>
+
+  <div id="apps"></div>
+
+  <section class="how" aria-label="How the line works">
     <div>
-      <h3>Test</h3>
-      <p>Footnote's store tests run against a pgvector Postgres started beside them. Barometer's job starts MongoDB, a mail catcher and Inngest's dev server, then a real browser signs up, opens the emailed link, unsubscribes and deletes the account. MagicStream is checked through nginx, the way a browser reaches it.</p>
+      <svg aria-hidden="true"><use href="#i-test"/></svg>
+      <h3>Check</h3>
+      <p>Footnote's search runs against a real pgvector database. Barometer's browser test signs up, opens the emailed link, unsubscribes and deletes the account. MagicStream is checked through nginx, the way a visitor reaches it.</p>
     </div>
     <div>
+      <svg aria-hidden="true"><use href="#i-pack"/></svg>
       <h3>Pack</h3>
-      <p>Each app builds a multi-stage Docker image: dependencies, a dev stage for live reload, a build stage, and a small runtime stage that runs as a non-root user. The image is started and probed before it can ship.</p>
+      <p>Each app builds a layered Docker image and runs as a non-root user in the final layer. The image is started and probed before it can leave.</p>
       <pre>docker compose -f compose.yml \
   -f compose.dev.yml watch</pre>
     </div>
     <div>
+      <svg aria-hidden="true"><use href="#i-ship"/></svg>
       <h3>Ship</h3>
-      <p>On <code>main</code>, Footnote and Barometer publish to GitHub's container registry, tagged <code>latest</code> and the commit. Barometer's site deploys on Vercel, Footnote's results page on GitHub Pages. MagicStream is built and tested from its author's repo but not republished: its code has no license.</p>
+      <p>Footnote and Barometer push to GitHub's container registry, tagged <span class="num">latest</span> and with the commit. MagicStream is built and tested from its author's repository but not republished, because its code has no license.</p>
     </div>
   </section>
 
   <footer>
-    <span>Built by Evan Wilson · run data from the GitHub Actions API, read when the page opens</span>
-    <span><a href="https://github.com/evannwilsonn/footnote">Footnote</a> · <a href="https://github.com/evannwilsonn/barometer">Barometer</a> · <a href="https://github.com/GavinLonDigital/MagicStream">MagicStream (Gavin Lon)</a></span>
+    <span>Evan Wilson · data from the GitHub Actions API · <a href="https://github.com/evannwilsonn/conveyor">source</a></span>
+    <span>Pictogram charts after Otto and Marie Neurath's Isotype</span>
   </footer>
 </div>
-<div id="tip" role="tooltip"></div>
 
 <script>
 const OWNER = "evannwilsonn";
-const LINES = [
-  { id: "footnote", name: "Footnote", repo: "footnote", workflow: "pipeline.yml",
-    what: "Question answering over documents with citations. Go, Postgres with pgvector, Ollama.",
-    ships: [["Image", '<a href="https://github.com/evannwilsonn/footnote/pkgs/container/footnote">ghcr.io/evannwilsonn/footnote</a>'],
-            ["Site", '<a href="https://evannwilsonn.github.io/footnote/">evannwilsonn.github.io/footnote</a> (GitHub Pages)'],
-            ["Gate", "gofmt, vet, race-checked tests on pgvector, page rebuild check, image smoke test"]] },
-  { id: "barometer", name: "Barometer", repo: "barometer", workflow: "pipeline.yml",
-    what: "Next-week volatility forecasts for US stocks, with accounts and a morning email. Next.js, MongoDB, Inngest.",
-    ships: [["Image", '<a href="https://github.com/evannwilsonn/barometer/pkgs/container/barometer">ghcr.io/evannwilsonn/barometer</a>'],
-            ["Site", '<a href="https://barometer-three.vercel.app">barometer-three.vercel.app</a> (Vercel, from main)'],
-            ["Gate", "typecheck, unit tests, build, 20-check browser test of every account flow, image smoke test"]] },
-  { id: "magicstream", name: "MagicStream", repo: "conveyor", workflow: "magicstream.yml",
-    what: "Gavin Lon's course app (React, Go, MongoDB), containerised here: nginx in front, the API behind it, a seed job.",
-    ships: [["Image", "built and tested each run, not published (no license on the app's code)"],
-            ["Site", "runs anywhere with <code>docker compose up</code>; see the repo"],
-            ["Gate", "both images build, the four-container stack starts, 10 checks through nginx"]] },
+const UNIT = 5;
+const APPS = [
+  { key: "footnote", repo: "footnote", workflow: "pipeline.yml", name: "Footnote", sub: "Go · pgvector · Ollama",
+    what: "Question answering over documents, with citations.",
+    facts: [["Image", '<a href="https://github.com/evannwilsonn/footnote/pkgs/container/footnote">ghcr.io/evannwilsonn/footnote</a>'], ["Site", '<a href="https://evannwilsonn.github.io/footnote/">GitHub Pages</a>'], ["Gate", "gofmt, vet, race-checked tests on pgvector, page check, smoke test"], ["Repository", '<a href="https://github.com/evannwilsonn/footnote">evannwilsonn/footnote</a>']] },
+  { key: "barometer", repo: "barometer", workflow: "pipeline.yml", name: "Barometer", sub: "Next.js · MongoDB · Inngest",
+    what: "Next-week volatility forecasts for US stocks, with accounts and a morning email.",
+    facts: [["Image", '<a href="https://github.com/evannwilsonn/barometer/pkgs/container/barometer">ghcr.io/evannwilsonn/barometer</a>'], ["Site", '<a href="https://barometer-three.vercel.app">Vercel</a>, from main'], ["Gate", "typecheck, unit tests, build, 20-check browser test, smoke test"], ["Repository", '<a href="https://github.com/evannwilsonn/barometer">evannwilsonn/barometer</a>']] },
+  { key: "magicstream", repo: "conveyor", workflow: "magicstream.yml", name: "MagicStream", sub: "React · Go · MongoDB",
+    what: "Gavin Lon's course app in four containers: nginx, the API, MongoDB and a seed job.",
+    facts: [["Image", "built and tested, not published"], ["Site", "docker compose up, anywhere"], ["Gate", "both images build, stack starts, 10 checks through nginx"], ["Repository", '<a href="https://github.com/evannwilsonn/conveyor">evannwilsonn/conveyor</a>']] },
 ];
 
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+// What each step is for. Anything not named here is getting ready.
+const KIND = [
+  [/^(Publish|Log in)/, "ship"],
+  [/^Build the (API|web) image$/, "pack"],
+  [/^(Formatting|Vet|Tests|Results page|Typecheck|Unit tests|End-to-end|Build and start|Start the Inngest|Smoke test|Start the stack|Dev targets)/, "test"],
+];
+const kindOf = (job, name) => {
+  if (name === "Build") return job === "check" ? "test" : "pack"; // the check job compiles the app; the image job builds the container
+  for (const [re, k] of KIND) if (re.test(name)) return k;
+  return "setup";
+};
+const busywork = /^(Set up job|Complete job|Post |Stop containers)/;
+const ICON = { setup: "#i-setup", test: "#i-test", pack: "#i-pack", ship: "#i-ship" };
+const WORD = { setup: "getting ready", test: "checking", pack: "packing", ship: "shipping" };
+const order = ["setup", "test", "pack", "ship"];
 const secs = (a, b) => Math.max(0, (Date.parse(b) - Date.parse(a)) / 1000);
 const dur = s => s < 60 ? `${Math.round(s)}s` : `${Math.floor(s / 60)}m ${String(Math.round(s % 60)).padStart(2, "0")}s`;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const ago = t => { const m = (Date.now() - Date.parse(t)) / 60000; return m < 60 ? `${Math.max(1, Math.round(m))} min ago` : m < 2880 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`; };
-const median = xs => { if (!xs.length) return 0; const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
-const state = r => r.status !== "completed" ? "running" : r.conclusion === "success" ? "success" : r.conclusion === "failure" ? "failure" : "other";
 const firstLine = r => (r.head_commit?.message || r.display_title || "").split("\n")[0];
+const outcome = r => r.status !== "completed" ? "running" : r.conclusion === "success" ? "passed" : r.conclusion === "failure" ? "failed" : (r.conclusion || "stopped");
 
-const ICON = {
-  success: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
-  failure: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
-  running: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.3l2 1.4"/></svg>',
-  other: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 8h8"/></svg>',
-};
-const WORD = { success: "Passed", failure: "Failed", running: "Running", other: "Skipped" };
-
-// The API allows 60 unauthenticated requests an hour per visitor, so answers are kept for 5 minutes.
+// The GitHub API allows 60 requests an hour to a visitor who isn't signed in, so answers are kept 5 minutes.
 async function gh(path) {
   const key = "conveyor:" + path;
   try { const c = JSON.parse(sessionStorage.getItem(key)); if (c && Date.now() - c.t < 300000) return c.v; } catch {}
@@ -265,150 +251,104 @@ async function gh(path) {
   return v;
 }
 
-// Steps GitHub adds around every job are bookkeeping, not work.
-const busywork = /^(Set up job|Complete job|Post |Initialize containers|Stop containers)/;
-
-function tipFor(el, html) {
-  const tip = $("#tip");
-  const place = e => {
-    const r = el.getBoundingClientRect();
-    const x = e && e.clientX != null ? e.clientX : r.left + r.width / 2;
-    const y = e && e.clientY != null ? e.clientY : r.top;
-    const w = tip.offsetWidth;
-    tip.style.left = Math.min(window.innerWidth - w - 8, Math.max(8, x - w / 2)) + "px";
-    tip.style.top = Math.max(8, y - tip.offsetHeight - 12) + "px";
-  };
-  const show = e => { tip.innerHTML = html; tip.style.opacity = 1; place(e); };
-  const hide = () => (tip.style.opacity = 0);
-  el.addEventListener("mouseenter", show); el.addEventListener("mousemove", place); el.addEventListener("mouseleave", hide);
-  el.addEventListener("focus", () => show()); el.addEventListener("blur", hide);
+// Squares for a duration: whole units, plus a half square for a remainder of 2.5s or more,
+// and at least a half square for any step that took a second.
+function squares(d, kind) {
+  const whole = Math.floor(d / UNIT);
+  let half = d - whole * UNIT >= UNIT / 2;
+  if (!whole && !half && d >= 1) half = true;
+  return `<span class="u ${kind}"></span>`.repeat(whole) + (half ? `<span class="u ${kind} half"></span>` : "");
 }
 
-function renderLine(line, runs, jobs) {
-  const sec = document.createElement("section");
-  sec.className = "line"; sec.id = line.id; sec.setAttribute("aria-labelledby", `h-${line.id}`);
-  const latest = runs[0];
-  const st = latest ? state(latest) : "other";
-  const repoUrl = `https://github.com/${OWNER}/${line.repo}`;
-  const ships = `<dl class="ships">${line.ships.map(([k, v]) => `<div><dt class="label">${k}</dt><dd>${v}</dd></div>`).join("")}</dl>`;
-  const stampClass = latest ? (latest.status === "completed" ? latest.conclusion : latest.status) : "unknown";
-  const head = `<div class="line-head">
-      <div><h3 id="h-${line.id}">${line.name}</h3><p class="what">${esc(line.what)}</p>
-      <div class="links"><a href="${repoUrl}">Repository</a><a href="${repoUrl}/actions/workflows/${line.workflow}">All runs</a>${latest ? `<a href="${latest.html_url}">Latest run</a>` : ""}<a href="${repoUrl}/blob/main/.github/workflows/${line.workflow}">Workflow file</a></div></div>
-      <div class="stamp s-${stampClass}">${ICON[st]}${latest ? WORD[st] : "No runs yet"}</div>
-    </div>`;
-  const empty = { el: sec, runs: [], finished: [], okDurs: [] };
-  if (!latest || !jobs.length) {
-    sec.innerHTML = head + `<p class="empty">${latest ? "The latest run hasn't started its jobs yet." : `No runs of <code>${line.workflow}</code> yet. The first push to main starts one.`}</p>` + ships;
-    return { ...empty, runs };
-  }
-
-  // Belt: every job of the latest run on one clock, each split into its steps.
-  const t0 = Math.min(...jobs.map(j => Date.parse(j.started_at)));
-  const tEnd = Math.max(...jobs.map(j => j.completed_at ? Date.parse(j.completed_at) : Date.now()));
-  const span = Math.max(1, (tEnd - t0) / 1000);
-  let slowest = null;
-  const lanes = jobs.map(j => {
-    const jStart = (Date.parse(j.started_at) - t0) / 1000;
-    const jEnd = ((j.completed_at ? Date.parse(j.completed_at) : Date.now()) - t0) / 1000;
-    // Skipped steps (the failure-only log dumps, say) did no work, so they stay off the belt.
-    const steps = (j.steps || []).filter(s => !busywork.test(s.name) && s.started_at && s.conclusion !== "skipped");
-    const segs = steps.map(s => {
-      const d = secs(s.started_at, s.completed_at || new Date().toISOString());
-      if (!slowest || d > slowest.d) slowest = { d, name: s.name, job: j.name };
-      const cls = s.status !== "completed" ? "running" : s.conclusion === "failure" ? "failure" : s.conclusion === "skipped" ? "skipped" : "";
-      return { d, cls, name: s.name, verdict: s.status !== "completed" ? "running" : s.conclusion };
-    });
-    const total = segs.reduce((a, s) => a + s.d, 0) || 1;
-    return { name: j.name, left: jStart / span * 100, width: Math.max(1.5, (jEnd - jStart) / span * 100), segs, total };
-  });
-  const belt = lanes.map((l, li) => `<div class="lane"><div class="lane-name" title="${esc(l.name)}">${esc(l.name)}</div>
-      <div class="track"><div class="job" style="left:${l.left}%;width:${l.width}%">${l.segs.map((s, si) =>
-        `<span class="seg ${s.cls}" tabindex="0" data-tip="${li}:${si}" style="flex:${Math.max(s.d, l.total * 0.012)} 1 0" aria-label="${esc(s.name)}, ${dur(s.d)}, ${esc(s.verdict)}"></span>`).join("")}</div></div></div>`).join("");
-
-  // Crates: the last 20 runs, oldest on the left, height by duration.
-  const recent = runs.slice(0, 20).reverse();
-  const durs = recent.map(r => secs(r.run_started_at || r.created_at, r.status === "completed" ? r.updated_at : new Date().toISOString()));
-  const max = Math.max(...durs, 1);
-  const finished = runs.filter(r => r.status === "completed" && ["success", "failure"].includes(r.conclusion));
-  const passRate = finished.length ? Math.round(finished.filter(r => r.conclusion === "success").length / finished.length * 100) : 0;
-  const okDurs = runs.filter(r => r.conclusion === "success").map(r => secs(r.run_started_at || r.created_at, r.updated_at));
-  const crates = recent.map((r, i) => `<a class="crate ${state(r) === "success" ? "" : state(r)}" href="${r.html_url}" data-run="${i}" style="height:${Math.max(6, durs[i] / max * 100)}%" aria-label="Run ${r.run_number}: ${WORD[state(r)]}, ${dur(durs[i])}, ${esc(firstLine(r))}"></a>`).join("");
-
-  sec.innerHTML = head + `<div class="line-body">
-    <div class="panel">
-      <h4>Latest run, on one clock</h4>
-      <p class="sub">#${latest.run_number} · ${esc(latest.event)} · ${ago(latest.created_at)} · ${dur(span)} from first job to last</p>
-      <p class="commit"><code>${latest.head_sha.slice(0, 7)}</code><span title="${esc(firstLine(latest))}">${esc(firstLine(latest))}</span></p>
-      <div>${belt}</div>
-      <div class="axis" aria-hidden="true"><span></span><div><span>0s</span><span>${dur(span / 2)}</span><span>${dur(span)}</span></div></div>
-      <div class="legend"><span><i style="background:var(--pass-bg);border-color:var(--pass)"></i>step passed</span><span><i style="background:var(--fail-bg);border-color:var(--fail)"></i>failed</span><span><i style="background:var(--run-bg);border-color:var(--run)"></i>running</span></div>
-      ${slowest ? `<p class="longest">Longest step: <b>${esc(slowest.name)}</b> in ${esc(slowest.job)}, ${dur(slowest.d)}.</p>` : ""}
-    </div>
-    <div class="panel">
-      <h4>Last ${recent.length} run${recent.length === 1 ? "" : "s"}</h4>
-      <p class="sub">Height is how long the run took. Select one to open it.</p>
-      <div class="crates">${crates}</div>
-      <div class="crates-axis"><span>older</span><span>newest</span></div>
-      <div class="figures">
-        <div><b class="num">${finished.length ? passRate + "%" : "–"}</b><small>passed</small></div>
-        <div><b class="num">${okDurs.length ? dur(median(okDurs)) : "–"}</b><small>median green run</small></div>
-        <div><b class="num">${runs.length}</b><small>runs listed</small></div>
-      </div>
-    </div>
-  </div>` + ships;
-
-  sec.querySelectorAll(".seg").forEach(el => {
-    const [li, si] = el.dataset.tip.split(":").map(Number);
-    const s = lanes[li].segs[si];
-    tipFor(el, `<b>${esc(s.name)}</b><br>${esc(lanes[li].name)} · ${dur(s.d)} · ${esc(s.verdict)}`);
-  });
-  sec.querySelectorAll(".crate").forEach(el => {
-    const i = +el.dataset.run, r = recent[i];
-    tipFor(el, `<b>#${r.run_number} ${WORD[state(r)]}</b> · ${dur(durs[i])}<br>${esc(firstLine(r))}<br>${ago(r.created_at)}`);
-  });
-  return { el: sec, runs, finished, okDurs };
-}
-
-async function main() {
-  const box = $("#lines");
-  let rate = false;
-  const results = await Promise.all(LINES.map(async line => {
-    try {
-      const data = await gh(`/repos/${OWNER}/${line.repo}/actions/workflows/${line.workflow}/runs?per_page=20`);
-      const runs = data.workflow_runs || [];
-      const jobs = runs[0] ? (await gh(`/repos/${OWNER}/${line.repo}/actions/runs/${runs[0].id}/jobs`)).jobs || [] : [];
-      return renderLine(line, runs, jobs);
-    } catch (e) {
-      if (e.message === "rate") rate = true;
-      const sec = document.createElement("section");
-      sec.className = "line";
-      sec.innerHTML = `<div class="line-head"><div><h3>${line.name}</h3><p class="what">${esc(line.what)}</p></div></div><p class="empty">${e.status === 404 ? "This workflow hasn't run yet." : "Couldn't read runs from GitHub right now."} <a href="https://github.com/${OWNER}/${line.repo}/actions">See them on GitHub</a>.</p>`;
-      return { el: sec, runs: [], finished: [], okDurs: [] };
-    }
+function shape(jobs) {
+  return jobs.map(j => ({
+    name: j.name, start: j.started_at, end: j.completed_at || new Date().toISOString(),
+    steps: (j.steps || []).filter(s => !busywork.test(s.name) && s.started_at && s.conclusion !== "skipped")
+      .map(s => ({ name: s.name, d: secs(s.started_at, s.completed_at || new Date().toISOString()), kind: kindOf(j.name, s.name), failed: s.conclusion === "failure" })),
   }));
-  const all = results.flatMap(r => r.runs), fin = results.flatMap(r => r.finished), okd = results.flatMap(r => r.okDurs);
-  results.forEach(r => box.append(r.el));
-  $("#t-runs").textContent = all.length || "–";
-  $("#t-pass").textContent = fin.length ? Math.round(fin.filter(r => r.conclusion === "success").length / fin.length * 100) + "%" : "–";
-  $("#t-med").textContent = okd.length ? dur(median(okd)) : "–";
-  $("#status").textContent = rate
-    ? "GitHub's hourly limit for this browser is used up; some lines may be missing. Try again later."
-    : `Read from GitHub at ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`;
 }
 
-// Theme: follows the system, with a manual switch remembered in this browser.
+const chart = document.getElementById("chart"), apps = document.getElementById("apps");
+const grand = { setup: 0, test: 0, pack: 0, ship: 0 };
+let rate = false;
+
+async function load(app) {
+  const runs = (await gh(`/repos/${OWNER}/${app.repo}/actions/workflows/${app.workflow}/runs?per_page=20`)).workflow_runs || [];
+  const done = runs.find(r => r.status === "completed");
+  const jobs = done ? (await gh(`/repos/${OWNER}/${app.repo}/actions/runs/${done.id}/jobs`)).jobs || [] : [];
+  return { runs, done, jobs: shape(jobs) };
+}
+
+function render(app, d) {
+  const row = document.createElement("div");
+  row.className = "crow";
+  const sec = document.createElement("section");
+  sec.className = "app";
+  sec.setAttribute("aria-labelledby", `h-${app.key}`);
+  const head = (badge) => `<div class="app-head"><div><h2 id="h-${app.key}">${app.name}</h2><p>${esc(app.what)}</p></div>${badge}</div>
+    <dl class="facts">${app.facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>`;
+
+  if (!d || !d.done) {
+    const why = !d ? "Couldn't read this pipeline from GitHub right now." : d.runs.length ? "Its first run is still going." : "No runs yet.";
+    row.innerHTML = `<div class="who">${app.name}<small>${app.sub}</small></div><div class="units"><span class="empty-note">${why}</span></div><div class="t num">–</div>`;
+    sec.innerHTML = head("") + `<p class="parallel">${why} <a href="https://github.com/${OWNER}/${app.repo}/actions/workflows/${app.workflow}">See its runs on GitHub</a>.</p>`;
+    return [row, sec];
+  }
+  const { runs, done, jobs } = d;
+  const wall = secs(done.run_started_at || done.created_at, done.updated_at);
+  const all = jobs.flatMap(j => j.steps);
+  const byKind = Object.fromEntries(order.map(k => [k, all.filter(s => s.kind === k).reduce((a, s) => a + s.d, 0)]));
+  order.forEach(k => grand[k] += byKind[k]);
+  const work = order.reduce((a, k) => a + byKind[k], 0);
+  const res = outcome(done);
+
+  row.innerHTML = `<div class="who">${app.name}<small>${app.sub}</small></div>
+    <div class="units" role="img" aria-label="${app.name}: ${order.map(k => `${dur(byKind[k])} ${WORD[k]}`).join(", ")}">${order.map(k => squares(byKind[k], k)).join("")}</div>
+    <div class="t num" title="Push to finish">${dur(wall)}</div>`;
+
+  const running = runs[0] && runs[0].status !== "completed" ? `<p class="parallel"><b>Running now:</b> #${runs[0].run_number}, ${esc(firstLine(runs[0]))}. <a href="${runs[0].html_url}">Watch it</a>.</p>` : "";
+  const finished = runs.filter(r => r.status === "completed");
+  const passed = finished.filter(r => r.conclusion === "success").length;
+  const history = runs.slice(0, 20).reverse().map(r => {
+    const o = outcome(r);
+    return `<a class="mark ${o}" href="${r.html_url}" title="#${r.run_number} ${o} · ${esc(firstLine(r))} · ${ago(r.created_at)}" aria-label="Run ${r.run_number}, ${o}"></a>`;
+  }).join("");
+  const overlapping = jobs.filter(j => jobs.some(o => o !== j && Date.parse(o.start) < Date.parse(j.end) && Date.parse(j.start) < Date.parse(o.end)));
+
+  sec.innerHTML = head(`<a class="verdict v-${res}" href="${done.html_url}"><svg aria-hidden="true"><use href="${res === "passed" ? "#i-check" : "#i-cross"}"/></svg>${res} · ${dur(wall)}</a>`) + `
+    <p class="runline">Run #${done.run_number}, ${ago(done.created_at)}: <span class="num">${done.head_sha.slice(0, 7)}</span> ${esc(firstLine(done))}</p>
+    ${running}
+    <div class="jobs">${jobs.map(j => `<div class="job">
+        <h3>${esc(j.name)} job <span>${dur(secs(j.start, j.end))} on its machine, starting ${dur(secs(done.run_started_at || done.created_at, j.start))} after the push</span></h3>
+        ${j.steps.map(s => `<div class="step${s.failed ? " failed" : ""}"><svg role="img" aria-label="${WORD[s.kind]}"><use href="${ICON[s.kind]}"/></svg>
+          <span class="name">${esc(s.name)}${s.failed ? " <b>failed</b>" : ""}</span><span class="units" aria-hidden="true">${squares(s.d, s.kind)}</span><span class="d num">${dur(s.d)}</span></div>`).join("")}
+      </div>`).join("")}</div>
+    ${overlapping.length >= 2 ? `<p class="parallel">The ${overlapping.map(j => j.name).join(" and ")} jobs run side by side on separate machines, which is why ${dur(work)} of work finishes ${dur(wall)} after the push.</p>` : ""}
+    <div class="history"><span class="hl">Last ${runs.length} run${runs.length === 1 ? "" : "s"}, oldest first</span><span class="marks">${history}</span><span class="hl num">${passed} of ${finished.length} passed</span></div>`;
+  return [row, sec];
+}
+
+(async () => {
+  const results = await Promise.all(APPS.map(app => load(app).catch(e => { if (e.message === "rate") rate = true; return null; })));
+  APPS.forEach((app, i) => { const [row, sec] = render(app, results[i]); chart.append(row); apps.append(sec); });
+  const total = order.reduce((a, k) => a + grand[k], 0);
+  document.getElementById("chart-note").textContent = total
+    ? `Across the latest runs: ${dur(total)} of work, ${Math.round(grand.test / total * 100)}% of it checking and ${Math.round(grand.pack / total * 100)}% packing images. The time on the right is push to finish.`
+    : "";
+  document.getElementById("stamp").textContent = rate
+    ? "GitHub's hourly limit for this browser is used up"
+    : `Read from GitHub ${new Date().toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}`;
+})();
+
 (function () {
-  const root = document.documentElement, btn = $("#theme");
+  const root = document.documentElement;
   try { const t = localStorage.getItem("conveyor-theme"); if (t) root.dataset.theme = t; } catch {}
-  btn.addEventListener("click", () => {
+  document.getElementById("theme").addEventListener("click", () => {
     const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
     root.dataset.theme = dark ? "light" : "dark";
     try { localStorage.setItem("conveyor-theme", root.dataset.theme); } catch {}
   });
 })();
-
-main();
 </script>
 </body>
 </html>
