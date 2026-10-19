@@ -5,135 +5,169 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Conveyor</title>
 <meta name="description" content="Live pictogram chart of the Footnote, Barometer and MagicStream CI/CD pipelines: where each run spends its time.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/BigShoulders-Bold.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="fonts/GeistMono-Regular.ttf" as="font" type="font/ttf" crossorigin>
 <style>
-/* Layout: an Isotype chart sheet. Pictogram rows read left to right; one square = 5 seconds. */
+/* Self-hosted type, SIL OFL (licences beside the files in fonts/). */
+@font-face { font-family: "Big Shoulders"; src: url("fonts/BigShoulders-Bold.ttf") format("truetype"); font-weight: 700 900; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("fonts/GeistMono-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("fonts/GeistMono-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+
+/* Layout: a Swiss / industrial chart sheet. Pictogram rows read left to right; one square = 5 seconds.
+   Light theme is the thumbnail: off-white ground, ink type, four stage colours. Dark inverts the ground only. */
 :root {
-  --paper: #f1ede2;
-  --ink: #1d1c1a;
-  --soft: #55524b;
-  --rule: #cfc8b6;
-  --setup: #a29d90;    /* getting ready: runners, checkouts, installs */
-  --test: #2a5591;     /* checking: tests, builds that must compile, browser runs */
-  --pack: #d39a17;     /* packing: Docker image builds */
-  --ship: #c13a2c;     /* shipping: registry login and publish */
-  --card: #f8f5ec;
-  --display: "Jost", "Futura", "Century Gothic", system-ui, sans-serif;
-  --body: "Jost", "Futura", "Century Gothic", system-ui, sans-serif;
-  --data: "Courier Prime", "Courier New", ui-monospace, monospace;
+  --paper: #f3f1ea;
+  --ink: #1b1b1f;
+  --soft: #55534c;     /* captions: 7:1 on paper */
+  --rule: #d6d2c4;
+  --setup: #2d5bd2;    /* getting ready: runners, checkouts, installs */
+  --test: #f0b429;     /* checking: tests, builds that must compile, browser runs */
+  --pack: #e4572e;     /* packing: Docker image builds */
+  --ship: #1a9e77;     /* shipping: registry login and publish */
+  --pass: #1a9e77;
+  --fail: #e4572e;
+  --card: #ebe8de;
+  --focus: #2d5bd2;
+  --display: "Big Shoulders", "Oswald", "Arial Narrow", Impact, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --body: var(--mono);
+  --data: var(--mono);
+  color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #1a1a18; --ink: #f0ebdd; --soft: #b9b3a4; --rule: #3b3934;
-    --setup: #7f7a6e; --test: #6f9be0; --pack: #e8b23a; --ship: #ec6b5c; --card: #22221f;
+    --paper: #131316; --ink: #f3f1ea; --soft: #aeaba1; --rule: #34343b; --card: #1c1c21;
+    --focus: #f0b429;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #1a1a18; --ink: #f0ebdd; --soft: #b9b3a4; --rule: #3b3934;
-  --setup: #7f7a6e; --test: #6f9be0; --pack: #e8b23a; --ship: #ec6b5c; --card: #22221f;
+  --paper: #131316; --ink: #f3f1ea; --soft: #aeaba1; --rule: #34343b; --card: #1c1c21;
+  --focus: #f0b429;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.55 var(--body); }
-a { color: inherit; text-decoration-color: var(--ship); text-decoration-thickness: 2px; text-underline-offset: 3px; }
-a:hover { color: var(--ship); }
-:focus-visible { outline: 3px solid var(--test); outline-offset: 2px; }
-.sheet { max-width: 1080px; margin: 0 auto; padding-block: 28px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 15px/1.6 var(--body); }
+a { color: inherit; text-decoration-color: var(--pack); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+a:hover { text-decoration-color: var(--ink); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.sheet { max-width: 1160px; margin: 0 auto; padding-block: 40px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .num { font-family: var(--data); font-variant-numeric: tabular-nums; }
+.cap { font: 400 11px/1.4 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--soft); }
 
 /* title block */
-.masthead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: end; border-bottom: 6px solid var(--ink); padding-bottom: 14px; }
-.masthead h1 { margin: 0; font: 800 clamp(48px, 10vw, 112px)/.86 var(--display); letter-spacing: -.02em; text-transform: uppercase; }
-.masthead .plate { font: 500 13px/1.6 var(--data); text-align: right; color: var(--soft); }
-.masthead .plate b { color: var(--ink); font-weight: 700; }
-.lede { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 28px; margin-top: 22px; }
-.lede p { margin: 0; font-size: 20px; line-height: 1.45; max-width: 46ch; text-wrap: pretty; }
-.lede p.small { font-size: 15px; color: var(--soft); }
-.links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-weight: 500; }
+.masthead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: end; }
+.masthead h1 { margin: 0 0 0 -.03em; font: 700 clamp(84px, 21vw, 232px)/.8 var(--display); letter-spacing: -.005em; text-transform: uppercase; }
+.masthead .plate { font: 400 11px/1.9 var(--mono); letter-spacing: .14em; text-transform: uppercase; text-align: right; color: var(--soft); padding-bottom: 6px; }
+.masthead .plate b { color: var(--ink); font-weight: 700; letter-spacing: .08em; }
+.lede { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 32px; margin-top: 30px; }
+.lede p { margin: 0; font-size: 17px; line-height: 1.55; max-width: 52ch; text-wrap: pretty; }
+.lede p.small { font-size: 13px; color: var(--soft); line-height: 1.65; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 14px; font-size: 13px; }
 
-/* key */
-.key { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: center; font-size: 15px; }
-.key .unit-note { font: 700 13px var(--data); letter-spacing: .04em; text-transform: uppercase; padding: 6px 10px; border: 2px solid var(--ink); }
-.k { display: inline-flex; align-items: center; gap: 8px; }
-.k svg { width: 26px; height: 26px; flex: none; }
+/* key: the thumbnail's bottom legend */
+.key { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px 30px; align-items: center; font-size: 14px; }
+.key .unit-note { font: 400 11px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--soft); }
+.key .stack { margin-left: auto; font: 400 11px var(--mono); letter-spacing: .24em; text-transform: uppercase; }
+.k { display: inline-flex; align-items: center; gap: 10px; }
+.k i { width: 14px; height: 14px; flex: none; display: block; }
+.k svg { display: none; }
+.k.setup i { background: var(--setup); } .k.test i { background: var(--test); } .k.pack i { background: var(--pack); } .k.ship i { background: var(--ship); }
 
-/* the overview: one pictogram row per app */
-.chart { margin-top: 24px; border-top: 2px solid var(--ink); }
-.crow { display: grid; grid-template-columns: 160px minmax(0, 1fr) 84px; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--rule); }
-.crow .who { font: 700 22px/1.1 var(--display); text-transform: uppercase; letter-spacing: .01em; }
-.crow .who small { display: block; font: 400 13px var(--data); text-transform: none; color: var(--soft); margin-top: 4px; letter-spacing: 0; }
-.crow .t { font: 700 20px var(--data); text-align: right; }
+/* the overview: one pictogram row per app, last-20-runs column on the right */
+.chart-head { margin-top: 44px; display: grid; grid-template-columns: 150px minmax(0, 1fr) 72px 232px; gap: 20px; padding-bottom: 10px; }
+.chart-head .cap:first-child { grid-column: 2; }
+.chart-head .cap:last-child { grid-column: 4; }
+.chart { }
+.crow { display: grid; grid-template-columns: 150px minmax(0, 1fr) 72px 232px; gap: 20px; align-items: center; padding: 15px 0; }
+.crow + .crow { border-top: 1px solid var(--rule); }
+.crow .who { font: 400 16px/1.2 var(--mono); text-transform: lowercase; }
+.crow .who small { display: block; font: 400 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--soft); margin-top: 5px; }
+.crow .t { font: 700 15px var(--data); text-align: right; }
 .units { display: flex; flex-wrap: wrap; gap: 3px; }
-.u { width: 13px; height: 13px; border-radius: 1px; background: var(--setup); }
+.u { width: 12px; height: 12px; background: var(--setup); }
 .u.test { background: var(--test); } .u.pack { background: var(--pack); } .u.ship { background: var(--ship); }
-.u.half { width: 6px; }
-.axis-note { font: 400 13px var(--data); color: var(--soft); margin-top: 10px; }
+.u.half { width: 5px; }
+.axis-note { font: 400 12px/1.6 var(--data); color: var(--soft); margin: 14px 0 0; padding-top: 12px; border-top: 2px solid var(--ink); }
+.dots { display: flex; flex-wrap: wrap; gap: 3px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--pass); display: block; }
+.dots i.failed { background: var(--fail); }
+.dots i.running { background: var(--test); }
+.dots i.cancelled, .dots i.skipped, .dots i.stopped { background: transparent; box-shadow: inset 0 0 0 1.5px var(--soft); }
 
 /* per app */
-.app { margin-top: 56px; }
-.app-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 24px; align-items: end; border-bottom: 3px solid var(--ink); padding-bottom: 10px; }
-.app-head h2 { margin: 0; font: 800 44px/.95 var(--display); text-transform: uppercase; letter-spacing: -.01em; }
-.app-head p { margin: 6px 0 0; color: var(--soft); max-width: 60ch; }
-.verdict { display: inline-flex; align-items: center; gap: 8px; font: 700 14px var(--data); text-transform: uppercase; letter-spacing: .06em; padding: 7px 12px; background: var(--test); color: var(--paper); text-decoration: none; }
-.verdict:hover { color: var(--paper); background: var(--ink); }
-.verdict svg { width: 16px; height: 16px; }
+.app { margin-top: 72px; }
+.app-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 24px; align-items: end; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+.app-head h2 { margin: 0; font: 700 clamp(48px, 9vw, 76px)/.86 var(--display); text-transform: uppercase; }
+.app-head p { margin: 10px 0 0; color: var(--soft); max-width: 62ch; font-size: 14px; }
+.verdict { display: inline-flex; align-items: center; gap: 10px; font: 700 12px var(--data); text-transform: uppercase; letter-spacing: .14em; padding: 8px 12px; border: 1.5px solid var(--ink); color: var(--ink); text-decoration: none; }
+.verdict::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--pass); flex: none; }
+.verdict:hover { background: var(--ink); color: var(--paper); }
+.verdict svg { width: 14px; height: 14px; }
 .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-bottom: 1px solid var(--rule); margin: 0; }
 .facts div { padding: 12px 14px 12px 0; min-width: 0; }
 .facts div + div { padding-left: 14px; border-left: 1px solid var(--rule); }
-.facts dt { font: 700 12px var(--data); text-transform: uppercase; letter-spacing: .06em; color: var(--soft); }
-.facts dd { margin: 4px 0 0; font-size: 15.5px; overflow-wrap: anywhere; }
-.jobs { display: grid; gap: 22px; margin-top: 20px; }
-.job h3 { margin: 0 0 8px; font: 700 14px var(--data); text-transform: uppercase; letter-spacing: .07em; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
-.job h3 span { font-weight: 400; color: var(--soft); text-transform: none; letter-spacing: 0; }
-.step { display: grid; grid-template-columns: 30px minmax(0, 250px) minmax(0, 1fr) 56px; gap: 12px; align-items: center; padding: 5px 0; border-top: 1px dotted var(--rule); }
-.step svg { width: 22px; height: 22px; }
-.step .name { font-size: 15.5px; line-height: 1.3; }
-.step .d { font: 400 14px var(--data); text-align: right; color: var(--soft); }
-.parallel { font-size: 14.5px; color: var(--soft); margin: 14px 0 0; }
+.facts dt { font: 400 10.5px var(--data); text-transform: uppercase; letter-spacing: .2em; color: var(--soft); }
+.facts dd { margin: 6px 0 0; font-size: 13px; overflow-wrap: anywhere; }
+.jobs { display: grid; gap: 26px; margin-top: 24px; }
+.job h3 { margin: 0 0 8px; font: 700 12px var(--data); text-transform: uppercase; letter-spacing: .2em; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+.job h3 span { font-weight: 400; color: var(--soft); text-transform: none; letter-spacing: 0; font-size: 12.5px; }
+.step { display: grid; grid-template-columns: 14px minmax(0, 250px) minmax(0, 1fr) 60px; gap: 14px; align-items: center; padding: 6px 0; border-top: 1px solid var(--rule); }
+.step svg { width: 12px; height: 12px; }
+.step .name { font-size: 13.5px; line-height: 1.35; }
+.step .d { font: 400 13px var(--data); text-align: right; color: var(--soft); }
+.parallel { font-size: 13px; color: var(--soft); margin: 16px 0 0; max-width: 90ch; }
 
 /* how it works */
-.how { margin-top: 64px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; border-top: 6px solid var(--ink); padding-top: 22px; }
+.how { margin-top: 88px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; border-top: 2px solid var(--ink); padding-top: 24px; }
 .how div { min-width: 0; }
-.how svg { width: 44px; height: 44px; }
-.how h3 { margin: 10px 0 6px; font: 800 26px/1 var(--display); text-transform: uppercase; }
-.how p { margin: 0; color: var(--soft); font-size: 16px; }
-pre { margin: 12px 0 0; padding: 10px 12px; background: var(--card); border: 1px solid var(--rule); font: 13px/1.6 var(--data); overflow-x: auto; }
-footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; font-size: 14px; color: var(--soft); }
-.theme { font: 700 12px var(--data); text-transform: uppercase; letter-spacing: .06em; background: none; color: var(--ink); border: 2px solid var(--ink); padding: 5px 9px; cursor: pointer; margin-top: 6px; }
+.how svg { width: 34px; height: 34px; }
+.how h3 { margin: 14px 0 8px; font: 700 44px/.9 var(--display); text-transform: uppercase; }
+.how p { margin: 0; color: var(--soft); font-size: 13.5px; }
+pre { margin: 14px 0 0; padding: 10px 12px; background: var(--card); border-left: 3px solid var(--pack); font: 12.5px/1.6 var(--data); overflow-x: auto; }
+footer { margin-top: 56px; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; font: 400 11px/1.7 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+.theme { font: 700 11px var(--data); text-transform: uppercase; letter-spacing: .16em; background: none; color: var(--ink); border: 1.5px solid var(--ink); padding: 6px 10px; cursor: pointer; margin-top: 8px; }
+.theme:hover { background: var(--ink); color: var(--paper); }
 
-.verdict.v-failed { background: var(--ship); }
-.verdict.v-running { background: var(--pack); color: var(--ink); }
-.runline { margin: 14px 0 0; font-size: 15.5px; }
-.runline .num { font-size: 14px; padding: 1px 6px; border: 1px solid var(--rule); }
-.step.failed .name b { color: var(--ship); font-family: var(--data); text-transform: uppercase; font-size: 12px; letter-spacing: .06em; }
-.history { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); }
-.history .hl { font: 400 13px var(--data); color: var(--soft); }
-.marks { display: flex; flex-wrap: wrap; gap: 4px; }
-.mark { width: 16px; height: 16px; display: block; background: var(--ink); }
-.mark.failed { background: var(--ship); clip-path: polygon(20% 0, 50% 30%, 80% 0, 100% 20%, 70% 50%, 100% 80%, 80% 100%, 50% 70%, 20% 100%, 0 80%, 30% 50%, 0 20%); }
-.mark.running { background: var(--pack); border-radius: 50%; }
-.mark.cancelled, .mark.skipped, .mark.stopped { background: var(--setup); height: 6px; }
-.empty-note { font: 400 14px var(--data); color: var(--soft); }
-@media (max-width: 820px) {
+.verdict.v-failed::before { background: var(--fail); }
+.verdict.v-running::before { background: var(--test); }
+.runline { margin: 16px 0 0; font-size: 13.5px; }
+.runline .num { font-size: 12.5px; padding: 1px 6px; background: var(--card); }
+.step.failed .name b { color: var(--ink); background: var(--fail); padding: 0 5px; font-family: var(--data); text-transform: uppercase; font-size: 10.5px; letter-spacing: .12em; }
+.history { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.history .hl { font: 400 10.5px var(--data); letter-spacing: .2em; text-transform: uppercase; color: var(--soft); }
+.marks { display: flex; flex-wrap: wrap; gap: 5px; }
+.mark { width: 12px; height: 12px; display: block; border-radius: 50%; background: var(--pass); }
+.mark:hover { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--ink); }
+.mark.failed { background: var(--fail); }
+.mark.running { background: var(--test); }
+.mark.cancelled, .mark.skipped, .mark.stopped { background: transparent; box-shadow: inset 0 0 0 2px var(--soft); }
+.empty-note { font: 400 12.5px var(--data); color: var(--soft); }
+@media (max-width: 900px) {
   .masthead { grid-template-columns: minmax(0, 1fr); }
   .masthead .plate { text-align: left; }
   .lede, .how { grid-template-columns: minmax(0, 1fr); }
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .facts div:nth-child(3) { border-left: 0; padding-left: 0; }
-  .crow { grid-template-columns: minmax(0, 1fr) auto; }
+  .chart-head { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .chart-head .cap:first-child, .chart-head .cap:last-child { grid-column: 1; }
+  .chart-head .cap:last-child { display: none; }
+  .crow { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 16px; }
   .crow .units { grid-column: 1 / -1; grid-row: 2; }
-  .step { grid-template-columns: 26px minmax(0, 1fr) 50px; }
+  .crow .dots { grid-column: 1 / -1; grid-row: 3; }
+  .crow .dots::before { content: "last 20 runs"; font: 400 10px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--soft); margin-right: 8px; }
+  .step { grid-template-columns: 12px minmax(0, 1fr) 54px; }
   .step .units { grid-column: 2 / -1; grid-row: 2; }
+  .key .stack { margin-left: 0; }
 }
 @media (max-width: 480px) {
   .app-head { grid-template-columns: minmax(0, 1fr); }
   .app-head .verdict { justify-self: start; }
   .facts { grid-template-columns: minmax(0, 1fr); }
   .facts div + div { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); }
-  .u { width: 11px; height: 11px; } .u.half { width: 5px; }
+  .u { width: 10px; height: 10px; } .u.half { width: 4px; }
+  .lede p { font-size: 15px; }
 }
 </style>
 
@@ -141,10 +175,10 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--rule);
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <symbol id="i-setup" viewBox="0 0 24 24"><path fill="var(--setup)" d="M12 2l2 3 3.5-.8.8 3.5 3 2-2 3 2 3-3 2-.8 3.5L14 19l-2 3-2-3-3.5.8L5.7 17 2.7 15l2-3-2-3 3-2 .8-3.5L10 5z"/><circle cx="12" cy="12" r="3.6" fill="var(--paper)"/></symbol>
-    <symbol id="i-test" viewBox="0 0 24 24"><path fill="var(--test)" d="M9 2h6v2h-1v5.2l5.6 9.4A2.2 2.2 0 0 1 17.7 22H6.3a2.2 2.2 0 0 1-1.9-3.4L10 9.2V4H9z"/><path fill="var(--paper)" d="M8.2 15h7.6l1.5 2.6H6.7z" opacity=".55"/></symbol>
-    <symbol id="i-pack" viewBox="0 0 24 24"><path fill="var(--pack)" d="M2 7l10-5 10 5v10l-10 5-10-5z"/><path fill="none" stroke="var(--paper)" stroke-width="1.6" d="M2 7l10 5 10-5M12 12v10"/></symbol>
-    <symbol id="i-ship" viewBox="0 0 24 24"><path fill="var(--ship)" d="M1 6h13v10H1zM14 9h5l4 4v3h-9z"/><circle cx="5.5" cy="18" r="2.4" fill="var(--ship)"/><circle cx="18" cy="18" r="2.4" fill="var(--ship)"/><circle cx="5.5" cy="18" r="1" fill="var(--paper)"/><circle cx="18" cy="18" r="1" fill="var(--paper)"/></symbol>
+    <symbol id="i-setup" viewBox="0 0 24 24"><rect width="24" height="24" fill="var(--setup)"/></symbol>
+    <symbol id="i-test" viewBox="0 0 24 24"><rect width="24" height="24" fill="var(--test)"/></symbol>
+    <symbol id="i-pack" viewBox="0 0 24 24"><rect width="24" height="24" fill="var(--pack)"/></symbol>
+    <symbol id="i-ship" viewBox="0 0 24 24"><rect width="24" height="24" fill="var(--ship)"/></symbol>
     <symbol id="i-check" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2.4" d="M2.5 8.5l3.5 3.5 7.5-8"/></symbol>
     <symbol id="i-cross" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="2.4" d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></symbol>
   </defs>
@@ -164,34 +198,36 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--rule);
     <p class="small">Counted from each pipeline's latest finished run on GitHub Actions. Every square is five seconds of work. The steps GitHub runs around each job (starting it, tidying up) are left out.</p>
   </section>
 
-  <div class="key" aria-label="Key">
-    <span class="unit-note">■ = 5 seconds</span>
-    <span class="k"><svg aria-hidden="true"><use href="#i-setup"/></svg>Getting ready</span>
-    <span class="k"><svg aria-hidden="true"><use href="#i-test"/></svg>Checking</span>
-    <span class="k"><svg aria-hidden="true"><use href="#i-pack"/></svg>Packing the image</span>
-    <span class="k"><svg aria-hidden="true"><use href="#i-ship"/></svg>Shipping</span>
-  </div>
 
+  <div class="chart-head" aria-hidden="true"><span class="cap">One square = five seconds of work</span><span class="cap">Last 20 runs</span></div>
   <section class="chart" id="chart" aria-label="Work per run, by app"></section>
   <p class="axis-note" id="chart-note"></p>
+  <div class="key" aria-label="Key">
+    <span class="unit-note">■ = 5 seconds</span>
+    <span class="k setup"><i aria-hidden="true"></i><svg aria-hidden="true"><use href="#i-setup"/></svg>Getting ready</span>
+    <span class="k test"><i aria-hidden="true"></i><svg aria-hidden="true"><use href="#i-test"/></svg>Checking</span>
+    <span class="k pack"><i aria-hidden="true"></i><svg aria-hidden="true"><use href="#i-pack"/></svg>Packing the image</span>
+    <span class="k ship"><i aria-hidden="true"></i><svg aria-hidden="true"><use href="#i-ship"/></svg>Shipping</span>
+    <span class="stack">Docker · GitHub Actions · Cloud Run</span>
+  </div>
 
   <div id="apps"></div>
 
   <section class="how" aria-label="How the line works">
     <div>
-      <svg aria-hidden="true"><use href="#i-test"/></svg>
+      <svg aria-hidden="true" viewBox="0 0 34 34"><rect width="15" height="15" fill="var(--test)"/><rect x="19" width="15" height="15" fill="var(--test)"/><rect y="19" width="15" height="15" fill="var(--test)"/><rect x="19" y="19" width="15" height="15" fill="var(--test)"/></svg>
       <h3>Check</h3>
       <p>Footnote's search runs against a real pgvector database. Barometer's browser test signs up, opens the emailed link, unsubscribes and deletes the account. MagicStream is checked through nginx, the way a visitor reaches it.</p>
     </div>
     <div>
-      <svg aria-hidden="true"><use href="#i-pack"/></svg>
+      <svg aria-hidden="true" viewBox="0 0 34 34"><rect width="15" height="15" fill="var(--pack)"/><rect x="19" width="15" height="15" fill="var(--pack)"/><rect y="19" width="15" height="15" fill="var(--pack)"/><rect x="19" y="19" width="15" height="15" fill="var(--pack)"/></svg>
       <h3>Pack</h3>
       <p>Each app builds a layered Docker image and runs as a non-root user in the final layer. The image is started and probed before it can leave.</p>
       <pre>docker compose -f compose.yml \
   -f compose.dev.yml watch</pre>
     </div>
     <div>
-      <svg aria-hidden="true"><use href="#i-ship"/></svg>
+      <svg aria-hidden="true" viewBox="0 0 34 34"><rect width="15" height="15" fill="var(--ship)"/><rect x="19" width="15" height="15" fill="var(--ship)"/><rect y="19" width="15" height="15" fill="var(--ship)"/><rect x="19" y="19" width="15" height="15" fill="var(--ship)"/></svg>
       <h3>Ship</h3>
       <p>Footnote and Barometer push to GitHub's container registry, tagged <span class="num">latest</span> and with the commit. MagicStream is built and tested from its author's repository but not republished, because its code has no license.</p>
     </div>
@@ -299,7 +335,7 @@ function render(app, d) {
 
   if (!d || !d.done) {
     const why = !d ? "Couldn't read this pipeline from GitHub right now." : d.runs.length ? "Its first run is still going." : "No runs yet.";
-    row.innerHTML = `<div class="who">${app.name}<small>${app.sub}</small></div><div class="units"><span class="empty-note">${why}</span></div><div class="t num">–</div>`;
+    row.innerHTML = `<div class="who">${app.name}<small>${app.sub}</small></div><div class="units"><span class="empty-note">${why}</span></div><div class="t num">–</div><div class="dots"></div>`;
     sec.innerHTML = head("") + `<p class="parallel">${why} <a href="https://github.com/${OWNER}/${app.repo}/actions/workflows/${app.workflow}">See its runs on GitHub</a>.</p>`;
     return [row, sec];
   }
@@ -313,7 +349,8 @@ function render(app, d) {
 
   row.innerHTML = `<div class="who">${app.name}<small>${app.sub}</small></div>
     <div class="units" role="img" aria-label="${app.name}: ${order.map(k => `${dur(byKind[k])} ${WORD[k]}`).join(", ")}">${order.map(k => squares(byKind[k], k)).join("")}</div>
-    <div class="t num" title="Push to finish">${dur(wall)}</div>`;
+    <div class="t num" title="Push to finish">${dur(wall)}</div>
+    <div class="dots" role="img" aria-label="${app.name}: last ${runs.slice(0, 20).length} runs, ${runs.slice(0, 20).filter(r => outcome(r) === "passed").length} passed">${runs.slice(0, 20).reverse().map(r => `<i class="${outcome(r)}"></i>`).join("")}</div>`;
 
   const running = runs[0] && runs[0].status !== "completed" ? `<p class="parallel"><b>Running now:</b> #${runs[0].run_number}, ${esc(firstLine(runs[0]))}. <a href="${runs[0].html_url}">Watch it</a>.</p>` : "";
   const finished = runs.filter(r => r.status === "completed");
