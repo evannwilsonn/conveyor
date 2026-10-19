@@ -57,4 +57,4 @@ The board is an Isotype chart, after Otto and Marie Neurath's pictogram statisti
 
 ## Project 13
 
-The capstone's three Elixir apps (Lure, Recall and Squiggle) run the same line. Each one is formatted, compiled with warnings as errors and tested, built into an image that has to start and serve on port 7860, published to GHCR, and handed to its Hugging Face Space.
+The capstone's three Elixir apps (Lure, Recall and Squiggle) run the same line. Each one is formatted, compiled with warnings as errors and tested, built into an image that has to start and serve on port 7860, published to GHCR, and deployed to Google Cloud Run. `cloudrun-setup.sh` is the one-time Google Cloud setup they share: an image registry, a deployer account and keyless login from GitHub Actions.
